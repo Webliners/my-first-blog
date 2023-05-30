@@ -15,6 +15,7 @@ def post_detail(request, slug):
     post = get_object_or_404(Post, slug=slug)
     return render(request, 'blog/post_detail.html', {'post': post})
 
+#Make new post
 def post_new(request):
     if request.method == "POST":
         form = PostForm(request.POST)
@@ -26,4 +27,19 @@ def post_new(request):
             return redirect('post_detail', slug=post.slug)
     else:
         form = PostForm()
+    return render(request, 'blog/post_edit.html', {'form': form})
+
+# Edit post
+def post_edit(request, slug):
+    post = get_object_or_404(Post, slug=slug)
+    if request.method == "POST":
+        form = PostForm(request.POST, instance=post)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.published_date = timezone.now()
+            post.save()
+            return redirect('post_detail', slug=post.slug)
+    else:
+        form = PostForm(instance=post)
     return render(request, 'blog/post_edit.html', {'form': form})
